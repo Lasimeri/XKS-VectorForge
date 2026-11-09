@@ -4,7 +4,7 @@
 
 The native tools require C++20, CMake 3.20 or newer, and the OpenSSL crypto
 library and headers. CUDA is optional for the experimental kernels. The
-transitional compiler needs Python 3; inference additionally needs the packages
+transitional implementation needs Python 3; inference additionally needs the packages
 and compatible PyTorch CUDA installation in `requirements-inference.txt`.
 No model downloads or external services are required for local execution.
 
@@ -35,11 +35,12 @@ shard set. Processing statistics reads all BF16 bytes and can take time.
 ## Compile and verify
 
 ```sh
-./xksv compile /path/to/model --output model.xksv --codec dfloat11 --workers 4
+./build/xksv-native compile /path/to/model --output model.xksv --codec dfloat11 --workers 4
 ./build/xksv-native verify model.xksv --source /path/to/model
 ```
 
-The existing compiler is transitional Python and requires its built C++ library.
+The native compiler uses a bounded block work queue. The transitional Python
+compiler additionally supports experimental decoder tuning.
 Keep the source unchanged until compilation and verification finish. A `.partial`
 file and journal are kept beside the requested output. If interrupted, use the
 same source and options with `--resume`. Existing output is never overwritten.
@@ -49,7 +50,7 @@ stored checksums rather than comparing an independent source. Checksums detect
 corruption; they do not establish model authenticity.
 
 `--codec dfloat11-parallel` selects the experimental independent-substream
-encoding. `--autotune` measures GPU decoder alternatives subject to a size cap;
+encoding. The transitional compiler's `--autotune` measures GPU decoder alternatives subject to a size cap;
 it requires a compatible CUDA/PyTorch environment and does not tune inference.
 These encodings are inspired by DFloat11 but are not compatible with its file
 format. Non-BF16 tensors are stored without changing their bits.

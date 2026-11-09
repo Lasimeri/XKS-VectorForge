@@ -39,12 +39,11 @@ The current prototype implements a streaming Safetensors reader, a versioned
 indexed archive, checksums, source reconstruction verification, tensor-level
 resume, a Transformers fallback loader, and experimental serial CUDA decoding
 and decode/GEMV/GEMM kernels. Model-based tests and measurements have been run
-on SmolLM2-135M, but not yet on the target 27B model. Required next steps include
+on the local GrugCap-27B checkpoint. Required next steps include
 full graph and Qwen hybrid integration, compressed-weight inference, optimized
 GPU kernels, offload, autotuning, and complete performance profiling.
 The RTX 3090 Ti in the development environment has 24 GB VRAM, insufficient to
-hold the uncompressed checkpoint; the feasibility and performance of streaming
-have not been measured.
+hold the uncompressed checkpoint; streaming results are in [validation.md](validation.md).
 
 An initial Qwen3.5-0.8B streaming experiment failed numerical validation.
 DeltaNet directly reads its child convolution weight, bypassing its loading

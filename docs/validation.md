@@ -20,17 +20,8 @@ A separate [parallel decoder benchmark](benchmark-parallel-decode.json) measured
 2.45 ms versus 24.7 ms for a 16×4096 block, at 95,687 versus 86,995 encoded
 bytes. For a 16×256 block, parallel metadata made the encoded block larger than
 the raw source, so the compiler chooses raw storage for that case. These are
-individual-block measurements, not model-inference speedups. The opt-in fused
-GEMV path ran 210 linear layers of SmolLM2-135M: prefill logits matched, but
-its first decode logits differed by up to 0.3125 and the two-token request
-including prefill took 48.18 seconds. Generated IDs matched for that single
-prompt. See [fused model validation](smollm2-fused-validation.json); this is not
-strict execution and not an acceleration. With the parallel-substream artifact,
-the fused path applied to 30 linear layers and the remaining weights used the
-regular streaming fallback. A separate one-token-prompt check happened to match
-the original logits and token exactly, but atomic accumulation can change
-reduction order; this one result does not establish bit-identical execution.
-See [parallel fused model validation](smollm2-fused-parallel-validation.json).
+individual-block measurements, not model-inference speedups. The experimental
+fused model path is not currently implemented for GrugCap's architecture.
 
 ## GrugCap-27B scale test
 
@@ -42,6 +33,11 @@ and compared byte-for-byte with the source during compilation; the resulting
 and assets. The separate unindexed auxiliary Safetensors file is not part of
 the indexed checkpoint. The runtime does not use the 15 MTP draft-head tensors
 for normal Transformers generation, although they are stored and verified.
+
+The C++ compiler also compiled the full checkpoint, resumed after a deliberate
+interruption, and verified all 1,199 tensors and 55,562,855,904 source bytes.
+Its 37,001,811,104-byte artifact was removed after verification to preserve disk
+space; the earlier verified artifact remains in use and is being uploaded.
 
 On an RTX 3090 Ti, a five-token prompt and one generated token matched the
 source-streaming reference byte-for-byte for all 64 decoder layer outputs and
@@ -88,34 +84,7 @@ Each case has one measured run after warmup; this is insufficient to establish
 variability. Both paths use regular reconstructed Transformers weights during
 inference, so similar throughput is expected.
 
-## SmolLM2-135M
-
-The 269,030,016 tensor bytes compiled to a 188,262,645-byte artifact including
-assets and index. A checkpoint interruption and resume produced the exact same
-artifact SHA-256 as the uninterrupted compilation. An experimental
-32-substream build occupied 266,449,432 bytes including assets and index; for
-this small model its metadata and raw fallbacks largely erase compression.
-A size-constrained autotuned build occupied 188,276,048 bytes and selected
-the single-codebook codec for every block: no eligible block met the 15%
-parallel-size cap, so no GPU timing profile was needed for that model. A
-synthetic larger-slab test confirms that eligible candidates are timed and the
-result recorded.
-The experimental GPU loading path reconstructed the parallel-substream artifact and matched
-both prefill and decode logits on a tested prompt; see
-[parallel GPU validation](smollm2-parallel-gpu-validation.json). Its roughly
-4.4-second load time is a single run and mostly reflects raw fallbacks. For batch sizes 1, 4 and 8,
-512/2048/8192-token prefill and 1-token output were tested. Separately, 128 and
-512-token generation were tested at each of those batch sizes with 512-token
-prompts. Tested final prefill logit values and generated IDs matched the original
-backend. These historical logit comparisons used float32 value equality;
-they did not check the sign bit of zero. Results are in [prefill data](benchmark-smollm2-prefill.json) and
-[decode data](benchmark-smollm2-decode.json). Each case has one measured run
-after a prompt-shape warmup; prompts consist of repeated fixed token IDs and
-prefix caching is not used. GPU operations are synchronized around timings.
-Peak GPU allocation is PyTorch's cumulative peak for each model phase, not
-system-wide VRAM usage. The JSON includes individual timing values.
-
-PCIe volume, hardware bandwidth, peak host RAM, per-layer kernel timing,
+PCIe volume, hardware bandwidth, per-layer kernel timing,
 profiling, full benchmark repetitions, optimized fused inference, and original
 Qwen3.8-27B execution remain unmeasured. Results from other models cannot
 establish original Qwen3.8-27B correctness or performance.

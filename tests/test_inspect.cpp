@@ -1,4 +1,5 @@
 #include <array>
+#include <nlohmann/json.hpp>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -25,6 +26,20 @@ static int verify(const char *exe,const fs::path &archive,const fs::path &source
     if(!pid) { int fd=open("/dev/null",O_WRONLY); dup2(fd,1); dup2(fd,2); close(fd);
         execl(exe,exe,"verify",archive.c_str(),"--source",source.c_str(),nullptr); _exit(127); }
     int status=0; if(waitpid(pid,&status,0)<0 || !WIFEXITED(status)) throw std::runtime_error("verify did not exit"); return WEXITSTATUS(status);
+}
+static int compile(const char *exe,const fs::path &source,const fs::path &output,bool resume=false) {
+    auto pid=fork(); if(pid<0) throw std::runtime_error("fork failed");
+    if(!pid) { int fd=open("/dev/null",O_WRONLY); dup2(fd,1); dup2(fd,2); close(fd);
+        if(resume) execl(exe,exe,"compile",source.c_str(),"--output",output.c_str(),"--resume",nullptr);
+        else execl(exe,exe,"compile",source.c_str(),"--output",output.c_str(),nullptr);
+        _exit(127); }
+    int status=0; if(waitpid(pid,&status,0)<0 || !WIFEXITED(status)) throw std::runtime_error("compile did not exit"); return WEXITSTATUS(status);
+}
+static int compile_threads(const char *exe,const fs::path &source,const fs::path &output,const char *workers,const char *codec) {
+    auto pid=fork(); if(pid<0) throw std::runtime_error("fork failed");
+    if(!pid) { int fd=open("/dev/null",O_WRONLY); dup2(fd,1); dup2(fd,2); close(fd);
+        execl(exe,exe,"compile",source.c_str(),"--output",output.c_str(),"--workers",workers,"--codec",codec,nullptr); _exit(127); }
+    int status=0; if(waitpid(pid,&status,0)<0 || !WIFEXITED(status)) throw std::runtime_error("compile did not exit"); return WEXITSTATUS(status);
 }
 int main(int argc,char **argv) {
     if(argc!=2) return 2;
@@ -56,6 +71,35 @@ int main(int argc,char **argv) {
         if(verify(argv[1],archive,p)) throw std::runtime_error("valid archive rejected");
         {std::fstream f(archive,std::ios::in|std::ios::out|std::ios::binary); f.seekp(16); f.put(1);}
         if(!verify(argv[1],archive,p)) throw std::runtime_error("corrupted archive accepted");
+        auto native_archive=p/"compiled.xksv";
+        if(compile(argv[1],p,native_archive) || verify(argv[1],native_archive,p)) throw std::runtime_error("native compile round trip failed");
+        if(!compile(argv[1],p,native_archive)) throw std::runtime_error("existing output was overwritten");
+        auto thread_source=p/"thread-source"; fs::create_directory(thread_source);
+        std::string words(2*1024*1024,'\0');
+        for(size_t i=0;i<words.size();i+=2) { words[i]=char(i/2); words[i+1]=char(0x3f+(i/16384)%2); }
+        shard(thread_source/"model.safetensors",R"({"a":{"dtype":"BF16","shape":[524288],"data_offsets":[0,1048576]},"b":{"dtype":"BF16","shape":[524288],"data_offsets":[1048576,2097152]}})",words);
+        for(auto codec:{"dfloat11","dfloat11-parallel"}) {
+            auto single=p/(std::string(codec)+"-single.xksv"), parallel=p/(std::string(codec)+"-parallel.xksv");
+            if(compile_threads(argv[1],thread_source,single,"1",codec) || compile_threads(argv[1],thread_source,parallel,"4",codec) || verify(argv[1],parallel,thread_source)) throw std::runtime_error("threaded compile failed");
+            std::ifstream a(single,std::ios::binary),b(parallel,std::ios::binary);
+            if(std::string(std::istreambuf_iterator<char>(a),{})!=std::string(std::istreambuf_iterator<char>(b),{})) throw std::runtime_error("worker count changed artifact bytes");
+            if(std::string(codec)=="dfloat11") {
+                std::ifstream original(parallel,std::ios::binary); std::array<unsigned char,16> prefix{}; original.read(reinterpret_cast<char*>(prefix.data()),16);
+                uint64_t index_offset=0; for(unsigned i=0;i<8;++i) index_offset|=uint64_t(prefix[8+i])<<(8*i);
+                original.seekg(index_offset); auto index=nlohmann::json::parse(original);
+                auto &tensors=index["shards"][0]["tensors"]; const auto &last=tensors[0]["blocks"].back();
+                auto position=last["offset"].get<uint64_t>()+last["size"].get<uint64_t>(); tensors.erase(tensors.begin()+1);
+                auto resumed=p/"resumed.xksv"; auto partial=fs::path(resumed.string()+".partial"), journal=fs::path(resumed.string()+".journal");
+                fs::copy_file(parallel,partial); fs::resize_file(partial,position);
+                {std::ofstream f(journal); f<<nlohmann::json{{"index",index},{"position",position}}.dump();}
+                char byte; {std::fstream f(partial,std::ios::in|std::ios::out|std::ios::binary); f.seekg(16); f.get(byte); f.seekp(16); f.put(char(byte^1));}
+                if(!compile(argv[1],thread_source,resumed,true)) throw std::runtime_error("resume accepted corrupted committed data");
+                {std::fstream f(partial,std::ios::in|std::ios::out|std::ios::binary); f.seekp(16); f.put(byte);}
+                if(compile(argv[1],thread_source,resumed,true) || verify(argv[1],resumed,thread_source)) throw std::runtime_error("native resume failed");
+                std::ifstream a2(parallel,std::ios::binary),b2(resumed,std::ios::binary);
+                if(std::string(std::istreambuf_iterator<char>(a2),{})!=std::string(std::istreambuf_iterator<char>(b2),{})) throw std::runtime_error("resumed artifact differs");
+            }
+        }
         fs::remove_all(p); return 0;
     } catch(const std::exception &e) { std::cerr<<e.what()<<'\n'; fs::remove_all(p); return 1; }
 }

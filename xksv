@@ -1,4 +1,8 @@
 #!/bin/sh
 set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-exec "${XKSV_PYTHON:-python3}" "$root/python/xksv.py" "$@"
+case "${1:-}" in
+  inspect|compile|verify) exec "$root/build/xksv-native" "$@" ;;
+  run|bench) exec "${XKSV_PYTHON:-python3}" "$root/python/xksv.py" "$@" ;;
+  *) printf '%s\n' 'usage: xksv {inspect|compile|verify|run|bench} ...' >&2; exit 2 ;;
+esac

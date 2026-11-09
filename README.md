@@ -11,14 +11,15 @@ directly, but fused GEMM and a production optimized backend are not implemented.
 
 Documentation: [design and status](docs/design.md), [build and usage](docs/usage.md),
 [format](docs/format.md), [validation and benchmarks](docs/validation.md),
-[source audit](docs/source-audit.md), and [development](docs/development.md).
+[native GrugCap inference](docs/native-inference.md), [source audit](docs/source-audit.md),
+and [development](docs/development.md).
 
 ## Build
 
 C++20, CMake, and OpenSSL libcrypto are required for the native tools. Optional CUDA requires the CUDA
-compiler. The native migration currently supplies `build/xksv-native inspect`
-and `build/xksv-native verify` in C++; compilation and inference still use the transitional
-Python implementation. The transitional implementation requires Python 3, and inference also requires PyTorch, Transformers, and Accelerate. The validated
+compiler. The native migration supplies `build/xksv-native inspect`, `compile`,
+and `verify` in C++; inference still uses the transitional Python implementation.
+The transitional implementation requires Python 3, and inference also requires PyTorch, Transformers, and Accelerate. The validated
 versions are listed in `requirements-inference.txt`; install a PyTorch wheel
 matching the local CUDA environment. No network access is required for normal
 operation.
@@ -36,16 +37,12 @@ cmake --build build -j
 
 ```sh
 ./xksv inspect /path/to/model
-# C++-only checkpoint inventory (optionally add --stats):
-./build/xksv-native inspect /path/to/model
-./xksv compile /path/to/model --output model.xksv --codec dfloat11
+./xksv compile /path/to/model --output model.xksv --codec dfloat11 --workers 4
 # Optional independently coded substreams for the parallel CUDA decoder:
 ./xksv compile /path/to/model --output model-parallel.xksv --codec dfloat11-parallel
 # Measure GPU block decoders and select between compressed formats:
-XKSV_PYTHON=/path/to/python-with-torch-and-transformers ./xksv compile /path/to/model --output model-tuned.xksv --autotune
+/path/to/python-with-torch-and-transformers python/xksv.py compile /path/to/model --output model-tuned.xksv --autotune
 ./xksv verify model.xksv --source /path/to/model
-# C++-only block, tensor, and source-byte verification:
-./build/xksv-native verify model.xksv --source /path/to/model
 # After interruption, continue using the same source and output:
 ./xksv compile /path/to/model --output model.xksv --resume
 XKSV_PYTHON=/path/to/python-with-torch-and-transformers ./xksv run model.xksv --device cuda --prompt 'Hello' --max-new-tokens 16
@@ -55,6 +52,9 @@ XKSV_PYTHON=/path/to/python-with-torch-and-transformers ./xksv bench model.xksv 
 # Use bounded-memory source and compiled loading for a model larger than VRAM:
 XKSV_PYTHON=/path/to/python-with-torch-and-transformers ./xksv bench model.xksv --compare-original /path/to/model --source-streaming --stream --prefill 512 --batches 1 --generate 1 --repeats 1
 ```
+
+The `xksv` entry point runs the C++ implementation for `inspect`, `compile`,
+and `verify`. `run` and `bench` still use the transitional Python runtime.
 
 `--gpu-decode` selects experimental CUDA decoding for loading. The default
 codec uses a serial decoder; `dfloat11-parallel` uses independent substreams
@@ -73,10 +73,11 @@ compresses. This is a block-loading tuner; it does not tune GEMV/GEMM, prefill,
 or end-to-end generation. Resume a tuned build with `--autotune --resume` on
 the same GPU model and compute capability.
 
-The compiler uses a bounded multi-threaded work queue (configure `--workers`)
+The transitional compiler uses a bounded multi-threaded work queue (configure `--workers`)
 and checkpoints progress after each tensor. Resume rechecks committed
 blocks and source bytes before continuing; incomplete work uses adjacent
-`.partial` and `.journal` files.
+`.partial` and `.journal` files. The C++ compiler uses a bounded work queue and
+supports both codec variants and resume; it does not yet support autotuning.
 
 The compiler reads tensor slabs with bounded memory, packs BF16 into reversible
 16x16 tiles, Huffman-codes their exponents, and stores sign/mantissa bits
@@ -113,12 +114,7 @@ source-streaming reference byte-for-byte, and generated token IDs matched.
 The compiled streaming fallback was substantially slower in that single test.
 
 The CPU tests cover all BF16 bit patterns, edge tiles, corruption, mixed dtypes,
-and source comparison. A pretrained SmolLM2-135M was compiled and run on an RTX
-3090 Ti: tested last-token logits and greedy output tokens matched the original
-Transformers load exactly for the tested prompts. See
-[prefill benchmark data](docs/benchmark-smollm2-prefill.json),
-[decode benchmark data](docs/benchmark-smollm2-decode.json), and
-[validation details](docs/validation.md).
+and source comparison. See [validation details](docs/validation.md).
 Qwen3.5-0.8B's 488 source tensors reconstructed exactly, and a byte-level
 comparison matched all 24 text decoder layers, prefill logits, and one decode
 step on a tested prompt when

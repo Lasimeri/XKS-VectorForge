@@ -27,8 +27,8 @@ production compressed-weight serving engine.
    reconstruct module weights on demand and release them after use. Static
    layouts are inverted before these ordinary backend operators run.
 
-The current C++ CLI implements inventory and verification. The compiler,
-autotuner, benchmark harness and Transformers integration are transitional
+The C++ CLI implements inventory, multithreaded compilation, resume and verification.
+The autotuner, benchmark harness and Transformers integration are transitional
 Python components that call C++/CUDA numerical code. The migration to a fully
 native C/C++ toolchain and an established native inference backend is unfinished.
 
@@ -59,6 +59,10 @@ infinities, signed zeros and subnormals are preserved at the bit level.
 * **Experimental fused Llama GEMV:** directly consumes compressed linear slabs
   for selected batch-one Llama operations. The implementation is not optimized
   and can change floating-point results. It is disabled by default.
+* **Experimental native GrugCap bridge:** a C++ FUSE adapter presents decoded
+  archive weights as a virtual GGUF file to llama.cpp. It requires a compatible
+  GGUF metadata template and applies the layout and constant transformations
+  required by that backend. See [native-inference.md](native-inference.md).
 
 The streaming loader is currently restricted to Llama and Qwen3.5-family text
 execution. The backend's dtype configuration affects numerical comparisons.
@@ -79,7 +83,7 @@ PyTorch do not include every possible allocation in the process or system.
 
 ## Remaining work
 
-A complete native compiler and resume mechanism, architecture adapters and
+A native autotuner, architecture adapters and
 model graph analysis, production-grade compressed GEMV/GEMM, memory-residency
 planning, comprehensive profiler-driven tuning, GGUF interoperability, model
 security hardening, multi-GPU execution and full original Qwen3.8 validation

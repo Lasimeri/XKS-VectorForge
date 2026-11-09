@@ -15,7 +15,8 @@
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
-void verify_native(const fs::path &, const fs::path &);
+void verify_native(const fs::path &, const fs::path &, bool = false);
+void compile_native(const fs::path &, const fs::path &, const std::string &, bool, unsigned);
 namespace {
 constexpr uint64_t max_header = 100000000;
 const std::map<std::string, uint64_t> sizes = {{"BOOL",1},{"U8",1},{"I8",1},{"F8_E4M3",1},{"F8_E5M2",1},{"I16",2},{"U16",2},{"F16",2},{"BF16",2},{"I32",4},{"U32",4},{"F32",4},{"I64",8},{"U64",8},{"F64",8}};
@@ -61,8 +62,9 @@ json stats(std::ifstream &f, uint64_t pos, uint64_t size) {
     if(count) for(auto n:hist) if(n) { double p=double(n)/count; entropy-=p*std::log2(p); }
     return {{"exponent_histogram",hist},{"bit_ones",bits},{"exponent_entropy_bits",entropy},{"ideal_payload_bytes",double(count)*(8+entropy)/8}};
 }
-void inspect(const fs::path &source, bool with_stats) {
+json inspect_impl(const fs::path &source, bool with_stats) {
     std::vector<fs::path> files; std::map<std::string,std::string> mapping, actual;
+    json shards=json::array();
     const fs::path index=source/"model.safetensors.index.json";
     if(fs::is_directory(source) && fs::is_regular_file(index)) {
         std::ifstream f(index); std::string text((std::istreambuf_iterator<char>(f)),{}); auto j=parse_json(text);
@@ -106,15 +108,30 @@ void inspect(const fs::path &source, bool with_stats) {
         std::sort(ranges.begin(),ranges.end()); uint64_t cursor=0; for(auto [start,end]:ranges) { if(start!=cursor) throw std::runtime_error("overlapping or noncontiguous tensor data"); cursor=end; }
         if(cursor!=file_size-8-hlen) throw std::runtime_error("unreferenced tensor data");
         std::sort(tensors.begin(),tensors.end(),[](const json &a,const json &b){return a["start"].get<uint64_t>()<b["start"].get<uint64_t>();});
-        for(auto &t:tensors) { if(with_stats) t["statistics"]=t["dtype"]=="BF16" ? stats(f,8+hlen+t["start"].get<uint64_t>(),t["size"].get<uint64_t>()) : json(nullptr); std::cout<<t.dump()<<'\n'; }
+        for(auto &t:tensors) if(with_stats) t["statistics"]=t["dtype"]=="BF16" ? stats(f,8+hlen+t["start"].get<uint64_t>(),t["size"].get<uint64_t>()) : json(nullptr);
+        shards.push_back({{"name",path.filename().string()},{"path",path.string()},{"header",header},{"tensors",tensors}});
     }
     if(!mapping.empty() && mapping!=actual) throw std::runtime_error("shard index does not match tensor names and files");
+    return shards;
 }
 }
+json inventory_native(const fs::path &source, bool with_stats) { return inspect_impl(source,with_stats); }
 int main(int argc,char **argv) {
     try {
-        if(argc>=3 && std::string(argv[1])=="inspect" && (argc==3 || (argc==4 && std::string(argv[3])=="--stats"))) { inspect(argv[2],argc==4); return 0; }
+        if(argc>=3 && std::string(argv[1])=="inspect" && (argc==3 || (argc==4 && std::string(argv[3])=="--stats"))) { for(const auto &s:inventory_native(argv[2],argc==4)) for(const auto &t:s.at("tensors")) std::cout<<t.dump()<<'\n'; return 0; }
         if(argc>=3 && std::string(argv[1])=="verify" && (argc==3 || (argc==5 && std::string(argv[3])=="--source"))) { verify_native(argv[2],argc==5 ? fs::path(argv[4]) : fs::path()); return 0; }
-        std::cerr<<"usage: xksv-native inspect CHECKPOINT [--stats]\n       xksv-native verify ARCHIVE [--source CHECKPOINT_DIR]\n"; return 2;
+        if(argc>=3 && std::string(argv[1])=="compile") {
+            fs::path output; std::string codec="dfloat11"; bool resume=false; unsigned workers=4;
+            for(int i=3;i<argc;++i) { std::string arg=argv[i];
+                if(arg=="--output" && i+1<argc) output=argv[++i];
+                else if(arg=="--codec" && i+1<argc) codec=argv[++i];
+                else if(arg=="--workers" && i+1<argc) { std::string value=argv[++i]; size_t used=0; auto n=std::stoul(value,&used); if(used!=value.size() || n<1 || n>32) throw std::runtime_error("workers must be between 1 and 32"); workers=unsigned(n); }
+                else if(arg=="--resume") resume=true;
+                else throw std::runtime_error("unknown or incomplete compile option: "+arg);
+            }
+            if(output.empty() || (codec!="dfloat11" && codec!="dfloat11-parallel")) throw std::runtime_error("compile requires --output and a supported --codec");
+            compile_native(argv[2],output,codec,resume,workers); return 0;
+        }
+        std::cerr<<"usage: xksv-native inspect CHECKPOINT [--stats]\n       xksv-native compile CHECKPOINT --output ARCHIVE [--codec dfloat11|dfloat11-parallel] [--workers N] [--resume]\n       xksv-native verify ARCHIVE [--source CHECKPOINT_DIR]\n"; return 2;
     } catch(const std::exception &e) { std::cerr<<"xksv-native: "<<e.what()<<'\n'; return 1; }
 }

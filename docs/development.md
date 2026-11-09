@@ -1,11 +1,13 @@
 # Development and reproducibility
 
 The C++ sources in `src/` implement BF16 entropy coding, reversible tile
-layout, the C ABI, native Safetensors inspection and archive verification.
+layout, the C ABI, native Safetensors inspection, compilation and archive verification.
 `cuda/` contains experimental decoders and fused-kernel prototypes. The
-transitional compiler and runtime live in `python/`; they are not yet native.
-The executable `xksv` currently invokes this transitional implementation.
-`build/xksv-native` is the C++ migration entry point. nlohmann/json 3.12.0 is
+transitional compiler, autotuner and runtime live in `python/`; the runtime has
+not yet been ported to native code.
+The `xksv` entry point selects C++ for inspect, compile and verify, and the
+transitional implementation for run and bench. `build/xksv-native` is the
+native binary. nlohmann/json 3.12.0 is
 vendored under `third_party/nlohmann/` with its MIT license; OpenSSL is a system
 dependency. The project's own code uses the root MIT license.
 
