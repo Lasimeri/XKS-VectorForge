@@ -1,0 +1,136 @@
+{
+  "device": "cuda",
+  "streaming": true,
+  "execution_weight_dtype": "transformers-auto",
+  "load_seconds": 12.869250811054371,
+  "prefill_seconds": 11.808185813948512,
+  "input_tokens": 5,
+  "generation_seconds_including_prefill": 23.47063201002311,
+  "generated_tokens": 2,
+  "peak_vram_bytes": 531006976,
+  "logit_values_equal_after_float32_cast": true,
+  "max_abs_logit_difference": 0.0,
+  "generated_ids_equal": true,
+  "layers": [
+    {
+      "name": "model.language_model.layers.0",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.1",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.10",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.11",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.12",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.13",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.14",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.15",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.16",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.17",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.18",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.19",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.2",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.20",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.21",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.22",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.23",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.3",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.4",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.5",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.6",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.7",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.8",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.9",
+      "values_equal_after_float32_cast": true,
+      "max_abs_difference": 0.0
+    }
+  ]
+}

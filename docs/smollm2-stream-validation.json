@@ -1,0 +1,14 @@
+{
+  "device": "cuda",
+  "streaming": true,
+  "execution_weight_dtype": "source",
+  "load_seconds": 3.1830316410632804,
+  "prefill_seconds": 2.2535670700017363,
+  "input_tokens": 5,
+  "generation_seconds_including_prefill": 3.7494095789734274,
+  "generated_tokens": 2,
+  "peak_vram_bytes": 65765376,
+  "logit_values_equal_after_float32_cast": true,
+  "max_abs_logit_difference": 0.0,
+  "generated_ids_equal": true
+}

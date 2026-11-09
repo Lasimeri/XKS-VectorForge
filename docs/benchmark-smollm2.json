@@ -1,0 +1,173 @@
+{
+  "device": "cuda",
+  "artifact_bytes": 188262645,
+  "original_safetensors_bytes": 269060552,
+  "warmup_runs": 1,
+  "synchronization": "cuda synchronize before and after timed region",
+  "results": [
+    {
+      "mode": "original",
+      "batch": 1,
+      "prompt_tokens": 128,
+      "generated_tokens": 1,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.19245194492395967,
+        0.015929486020468175
+      ],
+      "decode_seconds": [
+        8.97992867976427e-06,
+        7.1499962359666824e-06
+      ],
+      "prefill_tokens_per_second_median": 1228.5163742266043,
+      "decode_tokens_per_second_median": null,
+      "model_load_seconds": 0.5923981600208208,
+      "peak_vram_bytes": 308787200
+    },
+    {
+      "mode": "original",
+      "batch": 1,
+      "prompt_tokens": 128,
+      "generated_tokens": 16,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.015087655978277326,
+        0.015576106030493975
+      ],
+      "decode_seconds": [
+        0.22796648100484163,
+        0.20148501405492425
+      ],
+      "prefill_tokens_per_second_median": 8348.616843777087,
+      "decode_tokens_per_second_median": 69.85655037904796,
+      "model_load_seconds": 0.5923981600208208,
+      "peak_vram_bytes": 308787200
+    },
+    {
+      "mode": "original",
+      "batch": 1,
+      "prompt_tokens": 512,
+      "generated_tokens": 1,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.024976824992336333,
+        0.01619126705918461
+      ],
+      "decode_seconds": [
+        6.319954991340637e-06,
+        7.419963367283344e-06
+      ],
+      "prefill_tokens_per_second_median": 24873.632684227556,
+      "decode_tokens_per_second_median": null,
+      "model_load_seconds": 0.5923981600208208,
+      "peak_vram_bytes": 402424832
+    },
+    {
+      "mode": "original",
+      "batch": 1,
+      "prompt_tokens": 512,
+      "generated_tokens": 16,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.016360256006009877,
+        0.01651851600036025
+      ],
+      "decode_seconds": [
+        0.2227908360073343,
+        0.21529007807839662
+      ],
+      "prefill_tokens_per_second_median": 31144.715496114157,
+      "decode_tokens_per_second_median": 68.48049991543138,
+      "model_load_seconds": 0.5923981600208208,
+      "peak_vram_bytes": 402424832
+    },
+    {
+      "mode": "compiled",
+      "batch": 1,
+      "prompt_tokens": 128,
+      "generated_tokens": 1,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.015982975950464606,
+        0.015907477005384862
+      ],
+      "decode_seconds": [
+        7.12997280061245e-06,
+        8.260016329586506e-06
+      ],
+      "prefill_tokens_per_second_median": 8027.480837428604,
+      "decode_tokens_per_second_median": null,
+      "model_load_seconds": 4.337100715958513,
+      "peak_vram_bytes": 308852736,
+      "last_prefill_logits_values_equal_after_float32_cast": true,
+      "max_abs_logit_difference": 0.0,
+      "generated_ids_equal": true
+    },
+    {
+      "mode": "compiled",
+      "batch": 1,
+      "prompt_tokens": 128,
+      "generated_tokens": 16,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.0160033869324252,
+        0.015024974942207336
+      ],
+      "decode_seconds": [
+        0.21019451203756034,
+        0.20771672995761037
+      ],
+      "prefill_tokens_per_second_median": 8250.516125677092,
+      "decode_tokens_per_second_median": 71.7855778580531,
+      "model_load_seconds": 4.337100715958513,
+      "peak_vram_bytes": 308852736,
+      "last_prefill_logits_values_equal_after_float32_cast": true,
+      "max_abs_logit_difference": 0.0,
+      "generated_ids_equal": true
+    },
+    {
+      "mode": "compiled",
+      "batch": 1,
+      "prompt_tokens": 512,
+      "generated_tokens": 1,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.017051956965588033,
+        0.017384298029355705
+      ],
+      "decode_seconds": [
+        6.829970516264439e-06,
+        6.839982233941555e-06
+      ],
+      "prefill_tokens_per_second_median": 29736.10226054934,
+      "decode_tokens_per_second_median": null,
+      "model_load_seconds": 4.337100715958513,
+      "peak_vram_bytes": 402490368,
+      "last_prefill_logits_values_equal_after_float32_cast": true,
+      "max_abs_logit_difference": 0.0,
+      "generated_ids_equal": true
+    },
+    {
+      "mode": "compiled",
+      "batch": 1,
+      "prompt_tokens": 512,
+      "generated_tokens": 16,
+      "repeats": 2,
+      "prefill_seconds": [
+        0.015876995981670916,
+        0.015824115020222962
+      ],
+      "decode_seconds": [
+        0.20612578897271305,
+        0.21079936297610402
+      ],
+      "prefill_tokens_per_second_median": 32301.707026571545,
+      "decode_tokens_per_second_median": 71.9553614354331,
+      "model_load_seconds": 4.337100715958513,
+      "peak_vram_bytes": 402490368,
+      "last_prefill_logits_values_equal_after_float32_cast": true,
+      "max_abs_logit_difference": 0.0,
+      "generated_ids_equal": true
+    }
+  ]
+}

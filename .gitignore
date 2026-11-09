@@ -1,0 +1,7 @@
+/build/
+*.xksv
+*.xksv.partial
+*.xksv.journal
+/.hf-upload/
+__pycache__/
+*.py[cod]

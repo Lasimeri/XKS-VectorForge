@@ -1,0 +1,139 @@
+{
+  "device": "cuda",
+  "streaming": true,
+  "experimental_fused_gemv": false,
+  "execution_weight_dtype": "transformers-auto",
+  "load_seconds": 2.8147955550812185,
+  "prefill_seconds": 12.11978799093049,
+  "input_tokens": 5,
+  "generation_seconds_including_prefill": 12.211228035041131,
+  "generated_tokens": 1,
+  "peak_vram_bytes": 541902848,
+  "decode_logits_bit_identical": true,
+  "decode_max_abs_logit_difference": 0.0,
+  "logits_bit_identical": true,
+  "max_abs_logit_difference": 0.0,
+  "generated_ids_equal": true,
+  "layers": [
+    {
+      "name": "model.language_model.layers.0",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.1",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.10",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.11",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.12",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.13",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.14",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.15",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.16",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.17",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.18",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.19",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.2",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.20",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.21",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.22",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.23",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.3",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.4",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.5",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.6",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.7",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.8",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    },
+    {
+      "name": "model.language_model.layers.9",
+      "bit_identical": true,
+      "max_abs_difference": 0.0
+    }
+  ]
+}
