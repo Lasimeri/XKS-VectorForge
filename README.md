@@ -8,6 +8,8 @@ resident fallback reconstructs weights into ordinary GPU or CPU tensors at load
 time. The streaming fallback reduces resident weight memory by decoding modules
 on demand. An opt-in experimental Llama GEMV path executes compressed slabs
 directly, but fused GEMM and a production optimized backend are not implemented.
+An optional C++ bridge can also run the tested GrugCap text model through
+llama.cpp, decoding archive weights on demand.
 
 Documentation: [design and status](docs/design.md), [build and usage](docs/usage.md),
 [format](docs/format.md), [validation and benchmarks](docs/validation.md),

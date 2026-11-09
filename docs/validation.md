@@ -50,6 +50,29 @@ reported peak GPU allocations of 2.72 GB in each phase, and peak process RSS
 was 4.37 GB. These are single-run measurements of a short prompt, not a
 throughput study. See [the raw result](grugcap-27b-validation.json).
 
+### Native llama.cpp bridge
+
+One cold native C/C++ run used the same compiled GrugCap archive through the
+experimental FUSE bridge and llama.cpp commit `f5b9bd39b56c7a7839a9795a100b6a00b84ac961`.
+The Qwen3.8 GGUF supplied metadata and tokenizer information only; model weights
+were decoded from the lossless GrugCap archive. Twenty layers were offloaded to
+the RTX 3090 Ti, with eight CPU threads, a 512-token context, a five-token
+prompt, greedy sampling, two generated tokens, and no warmup. The result was
+`The capital of France is Paris.` The first generated token matched the
+earlier source-streaming test; no native-to-Transformers logit comparison was
+performed.
+
+The runner reported 63.026 s for five prefill tokens (0.079 tokens/s) and
+40.128 s for one decode evaluation (0.0249 tokens/s). It reported 103.164 s
+total for prompt processing and generation. Loading before prompt processing
+took approximately 263 s by wall-clock timestamps; this is separate from that
+103 s. Samples taken every five seconds observed a maximum of 19,113 MiB total
+GPU memory in use, including other processes, and 15,835,648 KiB runner RSS.
+The bridge and system page cache are not included in runner RSS. This is one
+short request on a busy local machine, not a steady-state throughput study or a
+controlled comparison of the native and Python backends. The bridge decodes and
+pages weights on demand and does not use fused compressed-weight GEMM.
+
 ## Qwen3.5-0.8B
 
 The official checkpoint had 488 tensors and 1,746,882,752 tensor bytes. The
